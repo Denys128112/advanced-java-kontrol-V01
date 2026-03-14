@@ -1,7 +1,7 @@
 package OrderProcessing;
 
 public abstract class OrderProcessorTemplate {
-    final void process(){
+    public final void process(){
         validation();
         rahunok();
         reserveStock();

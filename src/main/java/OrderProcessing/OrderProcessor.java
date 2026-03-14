@@ -1,7 +1,11 @@
 package OrderProcessing;
 
+import DomainEntities.Money;
 import DomainEntities.Order;
+import DomainEntities.OrderItem;
+import Exceptions.AppException;
 import Exceptions.FullOrdereException;
+import Exceptions.PaymentException;
 import PaymentOperations.PaymentMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +14,7 @@ public class OrderProcessor extends OrderProcessorTemplate {
     private static final Logger logger = LoggerFactory.getLogger(OrderProcessor.class);
     private final PaymentMethod paymentMethod;
     private final Order order;
-    private MofinalAmount;
+    private Money finalAmount;
 
     public OrderProcessor(PaymentMethod paymentMethod, Order order) {
         this.paymentMethod = paymentMethod;
@@ -29,14 +33,9 @@ public class OrderProcessor extends OrderProcessorTemplate {
     @Override
     void rahunok() {
         double total = 0;
-        for (var item : order.getItems()) total += item.getPrice();
-
-        // Знижка 5% від 10_000
-        if (total >= 10000) {
-            total *= 0.95;
-            logger.info("Discount applied. Final amount: {}", total);
-        }
-        finalAmount = total;
+        for (OrderItem item : order.getItems())
+        total += item.getCostOfItem().getCents();
+        finalAmount.setCents(total);
     }
 
     @Override
@@ -51,9 +50,9 @@ public class OrderProcessor extends OrderProcessorTemplate {
             paymentMethod.pay(finalAmount);
             order.setStatus("PAID");
             logger.info("Payment successful for order {}", order.getId());
-        } catch (Exception e) {
+        } catch (PaymentException e) {
             logger.error("Payment failed: {}", e.getMessage());
-            throw new FullOrdereException("Payment error");
+            throw new AppException("Payment error",e);
         }
     }
 
